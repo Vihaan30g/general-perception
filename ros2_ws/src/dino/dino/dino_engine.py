@@ -21,8 +21,8 @@ class DinoEngine:
         self.model_id = model_id
         self.box_threshold = box_threshold
         self.text_threshold = text_threshold
-        #self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.device = "cpu"
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        #self.device = "cpu"
         self.processor = None
         self.model = None
 
