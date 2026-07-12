@@ -2,10 +2,22 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>sam</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <version>0.0.1</version>
+  <description>Box-prompted SAM segmentation node - consumes /zedx1/rgb + /dino/detections, publishes /sam/instance_mask + /sam/instances.</description>
   <maintainer email="vihaan30g@gmail.com">marsuser</maintainer>
   <license>TODO: License declaration</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <!--
+    torch, transformers, and Pillow are intentionally NOT declared here -
+    they're normally pip-installed (often a specific CUDA build of torch)
+    rather than pulled in via rosdep/apt, same as for the dino package.
+    Install them into the same Python environment `ros2 run` uses.
+  -->
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 grounding_dino_node.py
 Phase 1 of the perception pipeline (grounding dino -> sam -> pose).
@@ -16,28 +17,6 @@ Phase 1 of the perception pipeline (grounding dino -> sam -> pose).
   frame's header stamp, for a future SAM node to pick up and pair with the
   matching /zedx1/rgb frame.
 """
-
-import sys
-
-import torch
-torch.backends.cudnn.enabled = False   #DEBUG
-
-print("=" * 80)
-print("Python executable:")
-print(sys.executable)
-print()
-
-print("Python version:")
-print(sys.version)
-print()
-
-print("sys.path:")
-for p in sys.path:
-    print(p)
-print("=" * 80)
-
-
-###
 
 import json
 import threading
@@ -156,7 +135,12 @@ class GroundingDinoNode(Node):
             prompt = self._get_prompt()
             detections: List[Dict] = []
             if prompt:
-                detections = self.engine.infer(frame.rgb, prompt)
+                try:
+                    detections = self.engine.infer(frame.rgb, prompt)
+                except Exception as e:
+                    self.get_logger().error(f"DINO inference failed, skipping this frame: {e}")
+                    time.sleep(0.05)
+                    continue
             # if prompt is empty, detections stays [] -> no boxes drawn/published
 
             annotated = self._draw_boxes(frame.rgb, detections)
@@ -223,7 +207,8 @@ def main():
         node.display_loop()
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":
