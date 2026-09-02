@@ -1,0 +1,49 @@
+{
+    "num_frames": 20,
+    "rt_subframes": 2,
+    "control_timeline": false,
+    "rp_data": [
+        [
+            "/World/ZED_X/CameraLeft",
+            1280,
+            720,
+            "cam1"
+        ]
+    ],
+    "writer_name": "BasicWriter",
+    "out_working_dir": "/workspace/projects/general-perception/isaac_sim_ws/synthetic_data",
+    "out_dir": "warehouse_rec1",
+    "s3_params": {
+        "s3_bucket": "",
+        "s3_region": "",
+        "s3_endpoint": ""
+    },
+    "basic_writer_params": {
+        "rgb": true,
+        "bounding_box_2d_tight": true,
+        "bounding_box_2d_loose": false,
+        "semantic_segmentation": true,
+        "colorize_semantic_segmentation": false,
+        "instance_id_segmentation": true,
+        "colorize_instance_id_segmentation": false,
+        "instance_segmentation": false,
+        "colorize_instance_segmentation": false,
+        "distance_to_camera": true,
+        "distance_to_image_plane": false,
+        "colorize_depth": false,
+        "bounding_box_3d": false,
+        "occlusion": false,
+        "normals": false,
+        "motion_vectors": false,
+        "camera_params": true,
+        "pointcloud": true,
+        "pointcloud_include_unlabelled": false,
+        "skeleton_data": false
+    },
+    "backend_type": "DiskBackend",
+    "backend_params": {
+        "output_dir": "/workspace/projects/general-perception/isaac_sim_ws/synthetic_data/room2_rec1"
+    },
+    "custom_writer_name": "MyCustomWriter",
+    "config_file": "warehouse_config1.json"
+}
