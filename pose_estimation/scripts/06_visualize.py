@@ -1,16 +1,28 @@
 # scripts/06_visualize.py
-import open3d as o3d
-import numpy as np
+"""
+Step 6 - visualize the isolated object together with its estimated pose
+(coordinate frame) and a world-origin reference frame.
+"""
+import argparse
 import json
 
-pcd = o3d.io.read_point_cloud("output/object.pcd")
-with open("output/pose.json") as f:
-    pose = json.load(f)
-T = np.array(pose["transform_4x4"])
+import numpy as np
+import open3d as o3d
 
-frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.08)
-frame.transform(T)
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--object", default="outputs/object.pcd")
+    ap.add_argument("--pose", default="outputs/pose.json")
+    args = ap.parse_args()
 
-world_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.15)  # origin reference
+    pcd = o3d.io.read_point_cloud(args.object)
+    with open(args.pose) as f:
+        pose = json.load(f)
+    T = np.array(pose["transform_4x4"])
 
-o3d.visualization.draw_geometries([pcd, frame, world_frame])
+    frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.08)
+    frame.transform(T)
+
+    world_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.15)  # origin reference
+
+    o3d.visualization.draw_geometries([pcd, frame, world_frame])
