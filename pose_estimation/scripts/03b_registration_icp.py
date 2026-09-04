@@ -99,7 +99,7 @@ def full_registration(pcds, voxel_size):
 
 
 if __name__ == "__main__":
-    files = sorted(glob.glob("outputs/per_view_pcd/*.pcd"))
+    files = sorted(glob.glob("../outputs/per_view_pcd/*.pcd"))
     if not files:
         raise RuntimeError("No per-view pcds found. Run 02_pcd_from_depth.py first.")
     pcds = [o3d.io.read_point_cloud(f) for f in files]
@@ -127,5 +127,5 @@ if __name__ == "__main__":
 
     merged = merged.voxel_down_sample(VOXEL)
     os.makedirs("outputs", exist_ok=True)
-    o3d.io.write_point_cloud("outputs/merged_scene_icp.pcd", merged)
+    o3d.io.write_point_cloud("../outputs/merged_scene_icp.pcd", merged)
     print(f"\nMerged (ICP) cloud: {len(merged.points)} points -> outputs/merged_scene_icp.pcd")

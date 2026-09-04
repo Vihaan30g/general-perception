@@ -21,12 +21,12 @@ from utils_isaac_io import find_frame_dirs, load_camera_params, load_extrinsics
 VOXEL = 0.005   # 5mm final downsample - tune based on object/scene scale
 
 if __name__ == "__main__":
-    frame_dirs = find_frame_dirs("data/captures")
+    frame_dirs = find_frame_dirs("../data/captures")
     merged = o3d.geometry.PointCloud()
 
     for frame_dir in frame_dirs:
         name = os.path.basename(frame_dir)
-        pcd_path = f"outputs/per_view_pcd/{name}.pcd"
+        pcd_path = f"../outputs/per_view_pcd/{name}.pcd"
         pcd = o3d.io.read_point_cloud(pcd_path)  # camera-local frame
 
         cam_params = load_camera_params(frame_dir)
@@ -38,6 +38,6 @@ if __name__ == "__main__":
 
     merged = merged.voxel_down_sample(VOXEL)
     os.makedirs("outputs", exist_ok=True)
-    o3d.io.write_point_cloud("outputs/merged_scene_extrinsics.pcd", merged)
+    o3d.io.write_point_cloud("../outputs/merged_scene_extrinsics.pcd", merged)
     print(f"\nMerged (known-extrinsics) cloud: {len(merged.points)} points "
           f"-> outputs/merged_scene_extrinsics.pcd")

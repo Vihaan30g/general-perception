@@ -68,5 +68,5 @@ def main(frame_dir):
 
 
 if __name__ == "__main__":
-    frame_dir = sys.argv[1] if len(sys.argv) > 1 else "data/captures/frame1"
+    frame_dir = sys.argv[1] if len(sys.argv) > 1 else "../data/captures/frame1"
     main(frame_dir)

@@ -35,20 +35,30 @@ def build_pcd_for_frame(frame_dir):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(pts_cam)
 
+
+    #Diagnosis
+    print("depth shape:", depth.shape)
+    print("rgb shape:", rgb.shape)
+    print("valid shape:", valid.shape)
+    print("valid pixels:", valid.sum())
+    print("pts_cam shape:", pts_cam.shape)
+    #
+
+
     if rgb is not None and rgb.shape[:2] == valid.shape:
-        colors = rgb[valid].astype(np.float64) / 255.0
+        colors = rgb[valid, :3].astype(np.float64) / 255.0
         pcd.colors = o3d.utility.Vector3dVector(colors)
 
     return pcd
 
 
 if __name__ == "__main__":
-    frame_dirs = find_frame_dirs("data/captures")
-    os.makedirs("outputs/per_view_pcd", exist_ok=True)
+    frame_dirs = find_frame_dirs("../data/captures")
+    os.makedirs("../outputs/per_view_pcd", exist_ok=True)
 
     for frame_dir in frame_dirs:
         name = os.path.basename(frame_dir)
         pcd = build_pcd_for_frame(frame_dir)
-        out_path = f"outputs/per_view_pcd/{name}.pcd"
+        out_path = f"../outputs/per_view_pcd/{name}.pcd"
         o3d.io.write_point_cloud(out_path, pcd)
         print(f"{name}: {len(pcd.points)} points (camera-local frame) -> {out_path}")

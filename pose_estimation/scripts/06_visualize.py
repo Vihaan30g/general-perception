@@ -11,8 +11,8 @@ import open3d as o3d
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--object", default="outputs/object.pcd")
-    ap.add_argument("--pose", default="outputs/pose.json")
+    ap.add_argument("--object", default="../outputs/object.pcd")
+    ap.add_argument("--pose", default="../outputs/pose.json")
     args = ap.parse_args()
 
     pcd = o3d.io.read_point_cloud(args.object)

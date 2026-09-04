@@ -15,9 +15,9 @@ import open3d as o3d
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--input", default="outputs/merged_scene_icp.pcd",
+    ap.add_argument("--input", default="../outputs/merged_scene_icp.pcd",
                      help="Merged scene pcd (from 03a or 03b)")
-    ap.add_argument("--output", default="outputs/object.pcd")
+    ap.add_argument("--output", default="../outputs/object.pcd")
     ap.add_argument("--plane-dist-thresh", type=float, default=0.008,
                      help="RANSAC plane inlier distance threshold (meters)")
     ap.add_argument("--voxel", type=float, default=0.003,
