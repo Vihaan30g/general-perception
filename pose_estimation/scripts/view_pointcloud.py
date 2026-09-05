@@ -8,7 +8,7 @@ Usage:
     python view_pointcloud.py outputs/merged_scene_icp.pcd --axis 0.2
     python view_pointcloud.py outputs/object.pcd --uniform-color 0.8 0.2 0.2
     python view_pointcloud.py outputs/merged_scene_extrinsics.pcd --voxel 0.005
-"""
+""" 
 import argparse
 
 import open3d as o3d
