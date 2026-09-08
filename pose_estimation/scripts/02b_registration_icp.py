@@ -1,6 +1,6 @@
 # scripts/03b_registration_icp.py
 """
-Step 3b - Method 2 (algorithmic): register the per-view point clouds purely
+Step 2b - Method 2 (algorithmic): register the per-view point clouds purely
 from geometry, WITHOUT using the simulation's ground-truth camera poses.
 
 Pipeline per pair of views:

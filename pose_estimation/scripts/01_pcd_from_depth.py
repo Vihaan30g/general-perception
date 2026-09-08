@@ -1,11 +1,11 @@
-# scripts/02_pcd_from_depth.py
+# scripts/01_pcd_from_depth.py
 """
-Step 2 - build one point cloud per captured frame, in that camera's OWN local
+Step 1 - build one point cloud per captured frame, in that camera's OWN local
 frame (camera-local coordinates), directly from the depth map + intrinsics.
 
 This is the shared prerequisite for BOTH downstream registration methods:
-    03a_registration_known_extrinsics.py  (uses ground-truth sim poses)
-    03b_registration_icp.py               (estimates poses via FPFH+RANSAC+ICP)
+    02a_registration_known_extrinsics.py  (uses ground-truth sim poses)
+    02b_registration_icp.py               (estimates poses via FPFH+RANSAC+ICP)
 
 Run this once. Per-view .pcd files are written to outputs/per_view_pcd/.
 """

@@ -1,6 +1,6 @@
 # scripts/03a_registration_known_extrinsics.py
 """
-Step 3a - Method 1 (ground truth): build the merged scene using the exact
+Step 2a - Method 1 (ground truth): build the merged scene using the exact
 camera poses Isaac Sim used at capture time (camera_params_*.json ->
 cameraViewTransform).
 
@@ -9,7 +9,7 @@ needed: we just transform each per-view point cloud (built by
 02_pcd_from_depth.py, still in camera-local coordinates) into the world frame
 with the known extrinsics and concatenate.
 
-Requires: outputs/per_view_pcd/*.pcd from 02_pcd_from_depth.py
+Requires: outputs/per_view_pcd/*.pcd from 01_pcd_from_depth.py
 Output:   outputs/merged_scene_extrinsics.pcd
 """
 import os

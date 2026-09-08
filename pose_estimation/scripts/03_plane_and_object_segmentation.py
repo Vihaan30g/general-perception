@@ -1,11 +1,11 @@
 # scripts/04_plane_and_object_segmentation.py
 """
-Step 4 - remove the support plane (table/ground) and isolate the object of
+Step 3 - remove the support plane (table/ground) and isolate the object of
 interest from a merged scene point cloud.
 
 Works on the output of EITHER registration method:
-    python 04_plane_and_object_segmentation.py --input outputs/merged_scene_extrinsics.pcd
-    python 04_plane_and_object_segmentation.py --input outputs/merged_scene_icp.pcd
+    python 03_plane_and_object_segmentation.py --input outputs/merged_scene_extrinsics.pcd
+    python 03_plane_and_object_segmentation.py --input outputs/merged_scene_icp.pcd
 """
 import argparse
 import os

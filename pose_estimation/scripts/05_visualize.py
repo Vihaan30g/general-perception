@@ -1,6 +1,6 @@
 # scripts/06_visualize.py
 """
-Step 6 - visualize the isolated object together with its estimated pose
+Step 5 - visualize the isolated object together with its estimated pose
 (coordinate frame) and a world-origin reference frame.
 """
 import argparse

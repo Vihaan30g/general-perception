@@ -2,7 +2,6 @@ ros2_ws/build/
 ros2_ws/install/
 ros2_ws/log/
 
-pose_estimation/data/
 pose_estimation/outputs/
 pose_estimation/.vscode/
 isaac_sim_ws/synthetic_data/

@@ -1,6 +1,6 @@
 # scripts/05_pose_estimation_pca.py
 """
-Step 5 - estimate the object's 6D pose (position + orientation) from its
+Step 4 - estimate the object's 6D pose (position + orientation) from its
 isolated point cloud using PCA: centroid gives translation, eigenvectors of
 the point covariance give the object's principal axes (rotation).
 """
