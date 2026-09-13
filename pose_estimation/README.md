@@ -30,7 +30,7 @@ The scene used for data capture — objects placed on a ground plane, lit and re
 
 Point cloud reconstructed from a single depth frame by backprojecting the depth map through the camera intrinsics into the camera-local coordinate frame. Each pixel with a valid depth value becomes a 3D point, coloured from the corresponding RGB image.
 
-**[![Watch demo](../images/play_button.png)](https://youtube.com/watch?v=PLACEHOLDER_SINGLE_FRAME)**
+**[![Watch demo](../images/play_button.png)](https://www.youtube.com/watch?v=D-HO_fBRJfw&list=PLFlQcuMhw47s&index=4)**
 *Click to watch: single-frame point cloud reconstruction*
 
 ---
@@ -39,10 +39,10 @@ Point cloud reconstructed from a single depth frame by backprojecting the depth 
 
 All 6 per-view point clouds registered and merged into a single world-space point cloud, using **Method 2a** — Isaac's ground-truth camera poses directly. Method 2b — FPFH feature matching + RANSAC global alignment + point-to-plane ICP + pose graph optimisation — achieves the same result with no pose priors required.
 
-**[![Watch demo](../images/play_button.png)](https://youtube.com/watch?v=PLACEHOLDER_MERGED_EXTRINSIC)**
+**[![Watch demo](../images/play_button.png)](https://www.youtube.com/watch?v=J5KzZRGoFNU&list=PLFlQcuMhw47s&index=1)**
 *Click to watch: merged point cloud (known extrinsics, Method 2a)*
 
-**[![Watch demo](../images/play_button.png)](https://youtube.com/watch?v=PLACEHOLDER_MERGED_ICP)**
+**[![Watch demo](../images/play_button.png)](https://www.youtube.com/watch?v=V-_PiYX1hU0&list=PLFlQcuMhw47s&index=2)**
 *Click to watch: merged point cloud (ICP registration, Method 2b)*
 
 ---
@@ -51,7 +51,7 @@ All 6 per-view point clouds registered and merged into a single world-space poin
 
 The ground plane is removed via RANSAC plane fitting. Statistical and radius outlier removal cleans registration artefacts. DBSCAN clustering extracts the largest remaining cluster — the object of interest — discarding stray noise points.
 
-**[![Watch demo](../images/play_button.png)](https://youtube.com/watch?v=PLACEHOLDER_OBJECT)**
+**[![Watch demo](../images/play_button.png)](https://www.youtube.com/watch?v=vN2arFIE2wM&list=PLFlQcuMhw47s&index=3)**
 *Click to watch: isolated object point cloud*
 
 ---
@@ -60,7 +60,7 @@ The ground plane is removed via RANSAC plane fitting. Statistical and radius out
 
 The estimated 6-DoF pose visualised as a coordinate frame (RGB axes = X/Y/Z) aligned to the object's principal axes, alongside the world-origin reference frame. Translation is the point cloud centroid; rotation is derived from the eigenvectors of the point covariance matrix (PCA).
 
-**[![Watch demo](../images/play_button.png)](https://youtube.com/watch?v=PLACEHOLDER_POSE)**
+**[![Watch demo](../images/play_button.png)](https://www.youtube.com/watch?v=-Mc86dpm9DU&list=PLFlQcuMhw47s&index=5)**
 *Click to watch: final pose estimation result*
 
 ---
