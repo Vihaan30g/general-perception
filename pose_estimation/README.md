@@ -26,17 +26,21 @@ The scene used for data capture — objects placed on a ground plane, lit and re
 
 ### Single-Frame Point Cloud
 
-Point cloud reconstructed from a single depth frame by backprojecting the depth map through the camera intrinsics into the camera-local coordinate frame. Each pixel with a valid depth value becomes a 3D point, coloured from the corresponding RGB image.
+Point cloud reconstructed from a single depth frame by backprojecting the depth map through the camera intrinsics into the camera-local coordinate frame. Each pixel with a valid depth value becomes a 3D point, coloured from the corresponding RGB image. The clip below orbits around the reconstructed cloud to show its shape and coverage from a single viewpoint.
 
-![Single Frame Point Cloud](images/single_frame_pcd.png)
+<video src="../videos/point_cloud_single_frame.webm" controls muted playsinline width="720">
+Your browser does not support the video tag — you can download the clip <a href="../videos/point_cloud_single_frame.webm">here</a>.
+</video>
 
 ---
 
 ### Merged Multi-View Point Cloud
 
-All 6 per-view point clouds registered and merged into a single world-space point cloud. Two registration methods were implemented: **Method 2a** using Isaac's ground-truth camera poses directly, and **Method 2b** using FPFH feature matching + RANSAC global alignment + point-to-plane ICP + pose graph optimisation — no pose priors required.
+All 6 per-view point clouds registered and merged into a single world-space point cloud, using **Method 2a** — Isaac's ground-truth camera poses directly. (Method 2b, the FPFH + RANSAC + ICP + pose graph pipeline, is available as `merged_icp.webm` and works identically without any pose priors.)
 
-![Merged Multi-View Point Cloud](images/merged_pcd.png)
+<video src="../videos/merged_extrinsic.webm" controls muted playsinline width="720">
+Your browser does not support the video tag — you can download the clip <a href="../videos/merged_extrinsic.webm">here</a>.
+</video>
 
 ---
 
@@ -44,7 +48,9 @@ All 6 per-view point clouds registered and merged into a single world-space poin
 
 The ground plane is removed via RANSAC plane fitting. Statistical and radius outlier removal cleans registration artefacts. DBSCAN clustering extracts the largest remaining cluster — the object of interest — discarding stray noise points.
 
-![Isolated Object Point Cloud](images/object_pcd.png)
+<video src="../videos/object.webm" controls muted playsinline width="720">
+Your browser does not support the video tag — you can download the clip <a href="../videos/object.webm">here</a>.
+</video>
 
 ---
 
@@ -52,7 +58,9 @@ The ground plane is removed via RANSAC plane fitting. Statistical and radius out
 
 The estimated 6-DoF pose visualised as a coordinate frame (RGB axes = X/Y/Z) aligned to the object's principal axes, alongside the world-origin reference frame. Translation is the point cloud centroid; rotation is derived from the eigenvectors of the point covariance matrix (PCA).
 
-![Final Pose Estimation](images/pose_result.png)
+<video src="../videos/pose.webm" controls muted playsinline width="720">
+Your browser does not support the video tag — you can download the clip <a href="../videos/pose.webm">here</a>.
+</video>
 
 ---
 
@@ -98,11 +106,7 @@ pose_estimation/
 │       ├── frame5/
 │       └── frame6/
 ├── images/                  # Screenshots used in this README
-│   ├── isaac_sim_scene.png
-│   ├── single_frame_pcd.png
-│   ├── merged_pcd.png
-│   ├── object_pcd.png
-│   └── pose_result.png
+│   └── isaac_sim_scene.png
 ├── scenes/
 │   └── objects_on_ground.usd   # Isaac Sim scene used for capture (requires Isaac Sim)
 └── scripts/
@@ -116,6 +120,13 @@ pose_estimation/
     ├── 05_visualize.py             # Step 5: Visualize result
     ├── fly_cam.py                  # Isaac Sim utility: add a free-fly camera
     └── view_pointcloud.py          # Utility: inspect any .pcd file at any stage
+
+videos/                      # Recordings used in this README (repo root)
+├── point_cloud_single_frame.webm
+├── merged_extrinsic.webm
+├── merged_icp.webm
+├── object.webm
+└── pose.webm
 ```
 
 > **Note:** `outputs/` is not committed to the repository (it would contain large `.pcd` files). It is created automatically when you run the scripts.
@@ -281,7 +292,7 @@ python 04_pose_estimation_pca.py
 
 ### Step 5 — Visualize
 
-Opens an Open3D interactive window showing the isolated object cloud, the estimated pose as a coordinate frame, and the world-origin reference frame.
+Opens an Open3D interactive window showing the isolated object cloud, the estimated pose as a coordinate frame, and the world-origin reference frame. This is the live session captured in the `pose.webm` clip above.
 
 ```bash
 python 05_visualize.py
