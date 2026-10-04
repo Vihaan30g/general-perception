@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grounding DINO ROS 2 Package: Text-Prompted Detection in Isaac Sim | Vihaan Gupta</title>
+<meta name="description" content="A ROS 2 package that runs the Grounding DINO open-vocabulary detector on a live Isaac Sim camera, with text prompts that can be changed at runtime without restarting the simulation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--soft:#f6f8fa;--text:#1f2933;--muted:#5b6770;--line:#e1e5ea;--accent:#1d4ed8;--code:#0f172a;--codetext:#e2e8f0}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);line-height:1.7;font-size:17px}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line)}
+.bar{max-width:900px;margin:auto;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bar a{color:var(--text);text-decoration:none;font-weight:600;font-size:15px}
+.bar a:hover{color:var(--accent)}
+main{max-width:900px;margin:auto;padding:32px 20px 60px}
+h1{font-size:2.1rem;line-height:1.25;margin:.2em 0}
+h2{font-size:1.5rem;margin:2.4em 0 .6em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+h3{font-size:1.15rem;margin:1.6em 0 .4em}
+p{margin:.6em 0}
+p.lead{color:var(--muted);font-size:1.1rem}
+.meta{color:var(--muted);font-size:14px}
+a{color:var(--accent)}
+code{font-family:"JetBrains Mono",Consolas,monospace;font-size:.88em;background:var(--soft);border:1px solid var(--line);padding:1px 5px;border-radius:4px}
+.cb{position:relative;margin:14px 0}
+pre{margin:0;background:var(--code);color:var(--codetext);padding:16px 18px;border-radius:8px;overflow-x:auto;font-family:"JetBrains Mono",Consolas,monospace;font-size:14px;line-height:1.55}
+pre.tree{background:var(--soft);color:var(--text);border:1px solid var(--line);font-size:13px}
+.cb button{position:absolute;top:8px;right:8px;background:#334155;color:#e2e8f0;border:0;border-radius:5px;padding:4px 10px;font-size:12px;cursor:pointer}
+.cb button:hover{background:#475569}
+.note,.warn{padding:12px 16px;border-radius:6px;margin:16px 0;border-left:4px solid var(--accent);background:#eff4ff}
+.warn{border-color:#b45309;background:#fff7ed}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:14px 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+nav.toc{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 22px;margin:22px 0}
+nav.toc ol{margin:6px 0 0;padding-left:20px;columns:2;column-gap:32px}
+@media(max-width:640px){nav.toc ol{columns:1}}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.btn{display:inline-block;padding:8px 16px;border-radius:6px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid var(--accent);background:var(--accent);color:#fff}
+.btn:hover{background:#1e40af}
+.btn.alt{background:#fff;color:var(--accent)}
+.btn.alt:hover{background:#eff4ff}
+.fig{margin:14px 0;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px;text-align:center}
+.fig img{display:block;max-width:100%;height:auto;margin:auto;border-radius:4px;cursor:zoom-in}
+.fig figcaption{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+.video{margin:18px 0}
+.video .frame{position:relative;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+.video .local{margin:0 0 10px;padding:10px 14px;border-radius:6px;border-left:4px solid #b45309;background:#fff7ed;font-size:14px;line-height:1.5}
+ul.tight{margin:.4em 0;padding-left:20px}ul.tight li{margin:4px 0}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:#eff4ff;color:var(--accent);border:1px solid #c7d6fb;vertical-align:middle}
+.node{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px 12px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.node.hl{background:#eff4ff;border-color:var(--accent)}
+.node .step{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.node.hl .step{color:var(--accent)}
+.node strong{font-size:15px;line-height:1.3}
+.node small{font-size:12.5px;color:var(--muted);line-height:1.4}
+.node code{font-size:11.5px}
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px;margin:14px 0}
+.flow .link{display:flex;flex-direction:column;align-items:center;color:var(--accent);width:112px}
+.flow .link svg{width:44px;height:16px}
+.flow .link span{font-size:11px;color:var(--muted);text-align:center;line-height:1.25;margin-top:3px;word-break:break-all;font-family:"JetBrains Mono",Consolas,monospace}
+@media(max-width:760px){.flow{grid-template-columns:1fr;justify-items:center}.flow .node{width:100%;max-width:340px}.flow .link{width:auto;flex-direction:row;gap:8px}.flow .link svg{transform:rotate(90deg);width:30px;height:30px}.flow .link span{margin-top:0}}
+.pipe{display:flex;flex-direction:column;align-items:center;gap:0;margin:18px 0}
+.pipe .node{width:100%;max-width:560px}
+.pipe .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:560px}
+@media(max-width:560px){.pipe .two{grid-template-columns:1fr}}
+.pipe .down{color:var(--accent);height:30px;display:flex;align-items:center}
+.pipe .down svg{width:16px;height:26px}
+#lb{position:fixed;inset:0;background:rgba(15,23,42,.88);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;cursor:zoom-out}
+#lb img{max-width:100%;max-height:100%;background:#fff;border-radius:6px}
+footer{border-top:1px solid var(--line);padding:24px 20px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <a href="https://vihaan30g.github.io/">&larr; All Projects</a>
+  <a href="https://github.com/Vihaan30g/general-perception">Repository</a>
+</div></header>
+<main>
+<p class="meta">Open-Vocabulary Detection &middot; Grounding DINO &middot; ROS 2 &middot; Isaac Sim &middot; Computer Vision &middot; Last updated: October 2026</p>
+<h1>Grounding DINO ROS 2 Package: Text-Prompted Detection in Isaac Sim</h1>
+<p class="lead">A ROS 2 package that runs the Grounding DINO model on a live simulated camera. You type what you want to find, and the objects are located in the running simulation. A new prompt takes effect immediately, without restarting anything.</p>
+
+<div class="btns">
+  <a class="btn" href="https://github.com/Vihaan30g/general-perception/tree/main/ros2_ws/src/dino">View package on GitHub</a>
+  <a class="btn alt" href="#demo">Watch the demo</a>
+</div>
+
+<nav class="toc"><strong>Contents</strong>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#demo">Demo</a></li>
+<li><a href="#model">What is Grounding DINO?</a></li>
+<li><a href="#how">How the model works</a></li>
+<li><a href="#io">Model inputs and outputs</a></li>
+<li><a href="#package">How the package works</a></li>
+<li><a href="#live">Changing the prompt without restarting</a></li>
+<li><a href="#run">Running it</a></li>
+<li><a href="#structure">Package structure and notes</a></li>
+</ol></nav>
+
+<h2 id="overview">1. Overview</h2>
+<p>Most object detectors can only find the fixed list of categories they were trained on. <strong>Grounding DINO</strong> is different: it takes a sentence-like text prompt, such as "yellow mug . red bottle .", and finds whatever that text describes in the image. This package wraps it as a ROS 2 node so that it can be used on the camera of a running <strong>NVIDIA Isaac Sim</strong> scene.</p>
+<p>It is the first stage of a perception pipeline (Grounding DINO, then SAM, then pose) and was built as a practice project while learning Isaac Sim and ROS 2.</p>
+<div class="note"><strong>Detection, not segmentation.</strong> Grounding DINO returns <strong>bounding boxes</strong> with a label and a confidence score. Pixel-accurate masks come from the next stage, the <a href="https://github.com/Vihaan30g/general-perception/tree/main/ros2_ws/src/sam"><code>sam</code> package</a>, which takes these boxes as its prompts.</div>
+
+<h2 id="demo">2. Demo</h2>
+<p>The recording shows the package running on an Isaac Sim camera. Instead of editing code or restarting the simulation, I type the objects I want into a terminal, and the model finds them in the live view. To look for something different, I run the same command again with a new string of objects. The simulation keeps running throughout.</p>
+<figure class="video"><div class="frame"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/mZnUSrMStwI?rel=0&playsinline=1" title="Grounding DINO in Isaac Sim: live text prompts" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption>Demo: changing the detection prompt from a terminal while the Isaac Sim simulation keeps running.</figcaption></figure>
+
+<h2 id="model">3. What is Grounding DINO?</h2>
+<p>Grounding DINO is an <strong>open-vocabulary (open-set) object detector</strong>. "Open-vocabulary" means the list of things it can find is not fixed in advance: any object you can describe in words is a valid target. "Grounding" means linking words to image regions, so each phrase in the prompt is tied to the boxes that match it.</p>
+<p>The name comes from combining two ideas:</p>
+<ul class="tight">
+<li><strong>DINO</strong> here is the detection architecture <em>DETR with Improved deNoising anchOr boxes</em>, a transformer-based object detector. It is <em>not</em> the self-supervised DINO / DINOv2 image-feature models from Meta, which share the name but do something different.</li>
+<li><strong>Grounded pre-training</strong> teaches the model to align image regions with text, which is what lets it follow a free-form prompt.</li>
+</ul>
+<p>This package uses the small <code>IDEA-Research/grounding-dino-tiny</code> checkpoint from Hugging Face, loaded through the <code>transformers</code> library. It runs on a GPU if one is available and falls back to the CPU otherwise.</p>
+
+<h2 id="how">4. How the model works</h2>
+<p>In brief, the model reads the image and the text separately, mixes the two, and then predicts boxes that are tied to words:</p>
+<div class="pipe" style="margin:14px 0">
+<div class="node"><span class="step">1</span><strong>Encode image and text</strong><small>An image backbone extracts visual features and a language model encodes the prompt</small></div>
+<div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node hl"><span class="step">2</span><strong>Fuse the two</strong><small>Cross-attention layers let image features and text features inform each other</small></div>
+<div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node hl"><span class="step">3</span><strong>Pick the best starting points</strong><small>Language-guided query selection chooses the image locations most related to the text</small></div>
+<div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node"><span class="step">4</span><strong>Decode boxes</strong><small>A cross-modality decoder refines each query into a box and scores it against the words</small></div>
+<div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node"><span class="step">5</span><strong>Filter</strong><small>Keep boxes above the box threshold, and name them using the words above the text threshold</small></div>
+</div>
+<p>Two thresholds control the filtering. This package uses <strong>0.35</strong> for the box confidence and <strong>0.25</strong> for the text match. Raising them gives fewer but more certain detections, and lowering them finds more objects at the cost of false positives.</p>
+
+<h2 id="io">5. Model inputs and outputs</h2>
+<div class="grid2">
+<div><h3 style="margin-top:.2em">Inputs</h3>
+<ul class="tight">
+<li><strong>An RGB image.</strong> Here, one frame from the simulated camera, as an H&times;W&times;3 array.</li>
+<li><strong>A text prompt.</strong> The objects to find, as lowercase phrases that each end with <code> . </code>, for example <code>yellow mug . red bottle . green table .</code></li>
+</ul></div>
+<div><h3 style="margin-top:.2em">Outputs</h3>
+<ul class="tight">
+<li><strong>Bounding boxes</strong> as pixel corners <code>[x1, y1, x2, y2]</code>.</li>
+<li><strong>A confidence score</strong> for each box.</li>
+<li><strong>A text label</strong> for each box, taken from the prompt.</li>
+</ul></div>
+</div>
+<p>With an empty prompt the engine returns no detections at all, which is the starting state of the package.</p>
+
+<h2 id="package">6. How the package works</h2>
+<p>The package is made of three small programs that talk over ROS 2 topics. The prompt travels along one path, the camera images along another, and they meet in the detector node.</p>
+<h3>Prompt path</h3>
+<div class="flow">
+<div class="node"><span class="step">Terminal</span><strong>set_prompt.py</strong><small>One-shot command</small></div><div class="link"><svg viewBox="0 0 48 16" aria-hidden="true"><line x1="2" y1="8" x2="38" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M36 2l9 6-9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>/dino/prompt_cmd</span></div><div class="node hl"><span class="step">Node</span><strong>prompt_manager_node</strong><small>Holds the active prompt</small></div><div class="link"><svg viewBox="0 0 48 16" aria-hidden="true"><line x1="2" y1="8" x2="38" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M36 2l9 6-9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>/dino/active_prompt</span></div><div class="node hl"><span class="step">Node</span><strong>grounding_dino_node</strong><small>Detector</small></div>
+</div>
+<h3>Image path</h3>
+<div class="flow">
+<div class="node"><span class="step">Simulation</span><strong>Isaac Sim camera</strong><small>Publishes RGB images</small></div><div class="link"><svg viewBox="0 0 48 16" aria-hidden="true"><line x1="2" y1="8" x2="38" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M36 2l9 6-9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>/zedx1/rgb</span></div><div class="node hl"><span class="step">Node</span><strong>grounding_dino_node</strong><small>Runs the model</small></div><div class="link"><svg viewBox="0 0 48 16" aria-hidden="true"><line x1="2" y1="8" x2="38" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M36 2l9 6-9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>/dino/detections</span></div><div class="node"><span class="step">Next stage</span><strong>sam package</strong><small>Turns boxes into masks</small></div>
+</div>
+
+<table>
+<tr><th>Program</th><th>Role</th></tr>
+<tr><td><code>prompt_manager_node.py</code></td><td>A long-running node that remembers the current prompt. It listens on <code>/dino/prompt_cmd</code> and republishes every change on <code>/dino/active_prompt</code>, using <strong>transient-local</strong> durability (a "latched" topic). Any node that starts later, even after the prompt was set, immediately receives the last prompt.</td></tr>
+<tr><td><code>set_prompt.py</code></td><td>A one-shot command-line tool, not a persistent node. It publishes one prompt string to <code>/dino/prompt_cmd</code> and exits.</td></tr>
+<tr><td><code>grounding_dino_node.py</code></td><td>The detector. It receives camera frames and the active prompt, runs Grounding DINO, shows the annotated result in a window and publishes the detections.</td></tr>
+<tr><td><code>dino/dino_engine.py</code></td><td>The <code>DinoEngine</code> class that wraps the model: it loads the processor and weights, and its <code>infer(image, prompt)</code> returns the list of detections. It does not depend on ROS, so it can be reused or tested on its own.</td></tr>
+</table>
+
+<h3>Inside the detector node</h3>
+<ul class="tight">
+<li><strong>Frames are never queued.</strong> The camera is faster than the model, so the ROS callback only stores the newest frame, overwriting older ones ("latest frame wins"). The model always works on the freshest image instead of falling further behind.</li>
+<li><strong>Inference runs in a background thread,</strong> so the heavy model call never blocks ROS message handling.</li>
+<li><strong>The window runs on the main thread.</strong> An OpenCV window titled "Grounding DINO" shows each frame with a green box and a "label score" tag per detection. Press <code>q</code> to quit.</li>
+<li><strong>Camera QoS is matched to the simulator:</strong> best-effort with a queue of one, as Isaac Sim's camera bridge typically publishes.</li>
+<li><strong>An empty prompt means no boxes.</strong> Until a prompt is set, the node draws and publishes nothing.</li>
+</ul>
+
+<h3>What gets published</h3>
+<p>Detections go out on <code>/dino/detections</code> as a JSON string. The image timestamp and frame ID are copied into it, so the next stage can find the exact camera frame each result belongs to, even though the model runs slower than the camera.</p>
+<div class="cb"><pre>{
+  "header": { "stamp_sec": 1234, "stamp_nanosec": 567890000, "frame_id": "zedx1_link" },
+  "prompt": "yellow mug . red bottle .",
+  "detections": [
+    { "label": "yellow mug", "score": 0.61, "box_xyxy": [412.0, 230.5, 498.2, 330.9] }
+  ]
+}</pre></div>
+<p>The values above are illustrative; the field names are those used by the node.</p>
+
+<h2 id="live">7. Changing the prompt without restarting</h2>
+<p>The demo's key feature comes directly from the design. The model is loaded <strong>once</strong>, when the detector node starts, and stays in memory. The prompt is not baked into the code or a launch file: it is just a string travelling over a topic.</p>
+<ol class="tight">
+<li>You run <code>set_prompt.py</code> with a new string of objects.</li>
+<li>It publishes the string once and exits.</li>
+<li>The prompt manager stores it and republishes it as the active prompt.</li>
+<li>The detector node updates its prompt under a lock, and the very next frame is processed with the new prompt.</li>
+</ol>
+<p>Nothing is reloaded and the simulation is never stopped. Only the small command is run again.</p>
+
+<h2 id="run">8. Running it</h2>
+<p><strong>Requirements:</strong> ROS 2 with <code>rclpy</code>, <code>sensor_msgs</code>, <code>std_msgs</code> and <code>cv_bridge</code>; Python packages <code>torch</code>, <code>transformers</code>, <code>Pillow</code>, <code>opencv-python</code> and <code>numpy</code>; and an Isaac Sim scene whose camera publishes images on <code>/zedx1/rgb</code> through the ROS 2 bridge. A GPU is recommended. The model weights are downloaded from Hugging Face the first time the node starts.</p>
+<div class="cb"><pre># build the package from the ROS 2 workspace
+cd ros2_ws
+colcon build --packages-select dino
+source install/setup.bash</pre></div>
+<p>Then use three terminals, each with the workspace sourced, and the Isaac Sim scene playing:</p>
+<div class="cb"><pre># terminal 1: keeps the active prompt
+ros2 run dino prompt_manager_node.py
+
+# terminal 2: loads the model and starts detecting
+ros2 run dino grounding_dino_node.py
+
+# terminal 3: set (and later change) what to look for
+ros2 run dino set_prompt.py "yellow mug . red bottle . green table ."</pre></div>
+<p>To look for something else, run the last command again with a new string. Put all objects in <strong>one</strong> string, in lowercase, each phrase ending with <code> . </code>. The <code>.py</code> suffix after the program name is required for these commands. Specific, descriptive phrases ("red bottle" rather than "bottle") usually work best.</p>
+
+<h2 id="structure">9. Package structure and notes</h2>
+<pre class="tree">ros2_ws/src/dino/
+  dino/
+    dino_engine.py           DinoEngine: the Grounding DINO wrapper (no ROS dependency)
+  scripts/
+    grounding_dino_node.py   detector node
+    prompt_manager_node.py   latched active-prompt holder
+    set_prompt.py            one-shot prompt command
+  package.xml
+  setup.py</pre>
+<ul class="tight">
+<li><strong>Where it fits.</strong> This is stage one of a Grounding DINO, SAM and pose pipeline. The <code>sam</code> package already listens to <code>/dino/detections</code> and turns each box into a mask.</li>
+<li><strong>Speed.</strong> Detections update at the speed of the model, not the camera, because of the latest-frame-wins design. A GPU makes a large difference.</li>
+<li><strong>A learning project.</strong> It was written to practise ROS 2 and Isaac Sim integration, so the messages are plain JSON strings rather than custom message types.</li>
+</ul>
+
+</main>
+<footer>Written by Vihaan Gupta &middot; <a href="https://github.com/Vihaan30g">GitHub</a> &middot; <a href="https://github.com/Vihaan30g/general-perception">general-perception repository</a> &middot; <a href="https://www.youtube.com/@vihaan30g">YouTube</a> &middot; <a href="mailto:vihaan30g@gmail.com">vihaan30g@gmail.com</a></footer>
+<div id="lb"><img alt=""></div>
+<script>
+document.querySelectorAll('.cb').forEach(function(b){
+  var btn=document.createElement('button');btn.textContent='Copy';
+  btn.onclick=function(){
+    var t=b.querySelector('pre').innerText;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1500)}).catch(function(){btn.textContent='Press Ctrl+C'});
+  };
+  b.appendChild(btn);
+});
+var lb=document.getElementById('lb'),lbi=lb.querySelector('img');
+document.querySelectorAll('.fig img').forEach(function(i){
+  i.addEventListener('click',function(){lbi.src=i.src;lbi.alt=i.alt;lb.style.display='flex'});
+});
+lb.addEventListener('click',function(){lb.style.display='none'});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')lb.style.display='none'});
+// YouTube cannot play embedded videos on pages opened straight from disk (file://).
+if (location.protocol === 'file:') {
+  var first = document.querySelector('.video');
+  if (first) {
+    var d = document.createElement('div');
+    d.className = 'local';
+    d.innerHTML = '<strong>Videos will not play inline here.</strong> You opened this page as a local file, and YouTube only plays embedded videos on pages served over http(s). View it on GitHub Pages, or run <code>python3 -m http.server</code> in the repository folder and open <code>http://localhost:8000</code>.';
+    first.parentNode.insertBefore(d, first);
+  }
+}
+</script>
+</body>
+</html>

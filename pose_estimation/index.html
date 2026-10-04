@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6-DoF Pose Estimation from Multi-View Point Clouds | Vihaan Gupta</title>
+<meta name="description" content="A from-scratch 6-DoF pose estimation pipeline on synthetic Isaac Sim RGB-D data: depth backprojection, multi-view registration with known poses and FPFH+RANSAC+ICP, plane removal, and PCA pose estimation with Open3D.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--soft:#f6f8fa;--text:#1f2933;--muted:#5b6770;--line:#e1e5ea;--accent:#1d4ed8;--code:#0f172a;--codetext:#e2e8f0}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);line-height:1.7;font-size:17px}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line)}
+.bar{max-width:900px;margin:auto;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bar a{color:var(--text);text-decoration:none;font-weight:600;font-size:15px}
+.bar a:hover{color:var(--accent)}
+main{max-width:900px;margin:auto;padding:32px 20px 60px}
+h1{font-size:2.1rem;line-height:1.25;margin:.2em 0}
+h2{font-size:1.5rem;margin:2.4em 0 .6em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+h3{font-size:1.15rem;margin:1.6em 0 .4em}
+p{margin:.6em 0}
+p.lead{color:var(--muted);font-size:1.1rem}
+.meta{color:var(--muted);font-size:14px}
+a{color:var(--accent)}
+code{font-family:"JetBrains Mono",Consolas,monospace;font-size:.88em;background:var(--soft);border:1px solid var(--line);padding:1px 5px;border-radius:4px}
+.cb{position:relative;margin:14px 0}
+pre{margin:0;background:var(--code);color:var(--codetext);padding:16px 18px;border-radius:8px;overflow-x:auto;font-family:"JetBrains Mono",Consolas,monospace;font-size:14px;line-height:1.55}
+pre.tree{background:var(--soft);color:var(--text);border:1px solid var(--line);font-size:13px}
+.cb button{position:absolute;top:8px;right:8px;background:#334155;color:#e2e8f0;border:0;border-radius:5px;padding:4px 10px;font-size:12px;cursor:pointer}
+.cb button:hover{background:#475569}
+.note,.warn{padding:12px 16px;border-radius:6px;margin:16px 0;border-left:4px solid var(--accent);background:#eff4ff}
+.warn{border-color:#b45309;background:#fff7ed}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:14px 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+nav.toc{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 22px;margin:22px 0}
+nav.toc ol{margin:6px 0 0;padding-left:20px;columns:2;column-gap:32px}
+@media(max-width:640px){nav.toc ol{columns:1}}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.btn{display:inline-block;padding:8px 16px;border-radius:6px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid var(--accent);background:var(--accent);color:#fff}
+.btn:hover{background:#1e40af}
+.btn.alt{background:#fff;color:var(--accent)}
+.btn.alt:hover{background:#eff4ff}
+.fig{margin:14px 0;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px;text-align:center}
+.fig img{display:block;max-width:100%;height:auto;margin:auto;border-radius:4px;cursor:zoom-in}
+.fig figcaption{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+.video{margin:18px 0}
+.video .frame{position:relative;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+.video .local{margin:0 0 10px;padding:10px 14px;border-radius:6px;border-left:4px solid #b45309;background:#fff7ed;font-size:14px;line-height:1.5}
+ul.tight{margin:.4em 0;padding-left:20px}ul.tight li{margin:4px 0}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:#eff4ff;color:var(--accent);border:1px solid #c7d6fb;vertical-align:middle}
+.node{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px 12px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.node.hl{background:#eff4ff;border-color:var(--accent)}
+.node .step{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.node.hl .step{color:var(--accent)}
+.node strong{font-size:15px;line-height:1.3}
+.node small{font-size:12.5px;color:var(--muted);line-height:1.4}
+.node code{font-size:11.5px}
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px;margin:14px 0}
+.flow .link{display:flex;flex-direction:column;align-items:center;color:var(--accent);width:112px}
+.flow .link svg{width:44px;height:16px}
+.flow .link span{font-size:11px;color:var(--muted);text-align:center;line-height:1.25;margin-top:3px;word-break:break-all;font-family:"JetBrains Mono",Consolas,monospace}
+@media(max-width:760px){.flow{grid-template-columns:1fr;justify-items:center}.flow .node{width:100%;max-width:340px}.flow .link{width:auto;flex-direction:row;gap:8px}.flow .link svg{transform:rotate(90deg);width:30px;height:30px}.flow .link span{margin-top:0}}
+.pipe{display:flex;flex-direction:column;align-items:center;gap:0;margin:18px 0}
+.pipe .node{width:100%;max-width:560px}
+.pipe .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:560px}
+@media(max-width:560px){.pipe .two{grid-template-columns:1fr}}
+.pipe .down{color:var(--accent);height:30px;display:flex;align-items:center}
+.pipe .down svg{width:16px;height:26px}
+#lb{position:fixed;inset:0;background:rgba(15,23,42,.88);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;cursor:zoom-out}
+#lb img{max-width:100%;max-height:100%;background:#fff;border-radius:6px}
+footer{border-top:1px solid var(--line);padding:24px 20px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <a href="https://vihaan30g.github.io/">&larr; All Projects</a>
+  <a href="https://github.com/Vihaan30g/general-perception">Repository</a>
+</div></header>
+<main>
+<p class="meta">3D Perception &middot; Point Clouds &middot; Open3D &middot; Isaac Sim &middot; Classical Geometry &middot; Last updated: October 2026</p>
+<h1>6-DoF Pose Estimation from Multi-View Point Clouds</h1>
+<p class="lead">A complete object pose estimation pipeline built from scratch on synthetic RGB-D data from NVIDIA Isaac Sim. It reconstructs a merged 3D point cloud from several views, isolates the object, and estimates its position and orientation, using classical geometry only and no learned models.</p>
+
+<div class="btns">
+  <a class="btn" href="https://github.com/Vihaan30g/general-perception/tree/main/pose_estimation">View project on GitHub</a>
+  <a class="btn alt" href="#results">See the results</a>
+</div>
+
+<nav class="toc"><strong>Contents</strong>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#pipeline">Pipeline</a></li>
+<li><a href="#results">Stage-by-stage results</a></li>
+<li><a href="#details">Technical details</a></li>
+<li><a href="#decisions">Key design decisions</a></li>
+<li><a href="#run">Running the pipeline</a></li>
+<li><a href="#tools">Utility scripts and re-capturing data</a></li>
+<li><a href="#structure">Repository structure</a></li>
+</ol></nav>
+
+<h2 id="overview">1. Overview</h2>
+<p>The pipeline takes multi-view RGB-D captures of a scene, merges them into one 3D point cloud using two independent registration methods, separates the object of interest from the scene, and estimates its <strong>6-DoF pose</strong> (position and orientation) with PCA on the resulting geometry.</p>
+<p>It was built as a hands-on learning project: to become fluent with <strong>Open3D</strong>, with <strong>Isaac Sim's Replicator</strong>, and with the whole stack of 3D perception, from raw depth backprojection to the final pose. Every stage uses classical geometric methods implemented directly, with no deep-learning frameworks, no ROS and no CUDA.</p>
+<div class="note"><strong>Reproducible without Isaac Sim.</strong> The 6 captured frames are included in the repository, so everything from Step 1 onwards can be run on any machine with Python, Open3D and NumPy.</div>
+
+<h2 id="pipeline">2. Pipeline</h2>
+<p>The work is a sequence of numbered scripts, each one stage of the process.</p>
+<div class="pipe">
+<div class="node"><span class="step">Input</span><strong>Isaac Sim Replicator</strong><small>RGB images, depth maps and camera parameters for 6 views</small></div><div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node"><span class="step">Step 0</span><strong>Verify camera conventions</strong><small>Check the depth math against Isaac's own ground-truth point cloud</small></div><div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node hl"><span class="step">Step 1</span><strong>Per-view point clouds</strong><small>Backproject depth through the intrinsics into the camera-local frame</small></div><div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="two"><div class="node hl"><span class="step">Step 2a</span><strong>Merge: known extrinsics</strong><small>Place each view using Isaac's ground-truth camera poses</small></div><div class="node hl"><span class="step">Step 2b</span><strong>Merge: FPFH + RANSAC + ICP</strong><small>Register from geometry alone, with no pose priors</small></div></div><div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node hl"><span class="step">Step 3</span><strong>Isolate the object</strong><small>Remove the ground plane, denoise, keep the largest cluster</small></div><div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node hl"><span class="step">Step 4</span><strong>Estimate 6-DoF pose</strong><small>PCA on the object cloud gives translation and rotation</small></div><div class="down"><svg viewBox="0 0 16 26" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 15l6 9 6-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="node"><span class="step">Step 5</span><strong>Visualise</strong><small>Object cloud, estimated pose frame and world origin</small></div>
+</div>
+
+<h2 id="results">3. Stage-by-stage results</h2>
+<p>Each stage below is shown with a short screen recording of the actual run.</p>
+
+<h3>The scene and the captures</h3>
+<p>The scene is a set of objects on a ground plane, lit and rendered in Isaac Sim. The Replicator <code>BasicWriter</code> records RGB, depth and camera parameters from each of the 6 viewpoints.</p>
+<figure class="fig"><img src="../images/isaac_sim_scene.png" width="1920" height="1080" loading="lazy" alt="The Isaac Sim scene used for data capture"><figcaption>The Isaac Sim scene used for data capture.</figcaption></figure>
+<div class="grid3">
+<figure class="fig"><img src="../images/Screenshot%20from%202026-09-12%2022-27-53.png" width="1920" height="1080" loading="lazy" alt="Captured RGB frame 1"><figcaption>Captured view 1</figcaption></figure>
+<figure class="fig"><img src="../images/Screenshot%20from%202026-09-12%2022-28-06.png" width="1920" height="1080" loading="lazy" alt="Captured RGB frame 2"><figcaption>Captured view 2</figcaption></figure>
+<figure class="fig"><img src="../images/Screenshot%20from%202026-09-12%2022-28-35.png" width="1920" height="1080" loading="lazy" alt="Captured RGB frame 3"><figcaption>Captured view 3</figcaption></figure>
+</div>
+
+<h3>Single-frame point cloud (Step 1)</h3>
+<p>The depth map of one frame is backprojected through the camera intrinsics into the camera's own coordinate frame. Every pixel with a valid depth becomes a 3D point, coloured from the matching RGB pixel.</p>
+<figure class="video"><div class="frame"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/D-HO_fBRJfw?rel=0&playsinline=1" title="Single-frame point cloud reconstruction" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption>Single-frame point cloud reconstruction.</figcaption></figure>
+
+<h3>Merged multi-view point cloud (Step 2)</h3>
+<p>All 6 per-view clouds are registered into one world-space cloud. <strong>Method 2a</strong> uses Isaac's ground-truth camera poses directly. <strong>Method 2b</strong> reaches the same result with no pose priors, using FPFH feature matching, RANSAC global alignment, point-to-plane ICP and pose graph optimisation.</p>
+<div class="grid2">
+<figure class="video"><div class="frame"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/J5KzZRGoFNU?rel=0&playsinline=1" title="Merged point cloud, known extrinsics" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption>Method 2a: known extrinsics.</figcaption></figure>
+<figure class="video"><div class="frame"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/V-_PiYX1hU0?rel=0&playsinline=1" title="Merged point cloud, ICP registration" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption>Method 2b: ICP registration.</figcaption></figure>
+</div>
+
+<h3>Isolated object cloud (Step 3)</h3>
+<p>The ground plane is removed with RANSAC plane fitting. Statistical and radius outlier removal clean up registration artefacts, and DBSCAN clustering keeps the largest remaining cluster, which is the object, while discarding stray noise points.</p>
+<figure class="video"><div class="frame"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/vN2arFIE2wM?rel=0&playsinline=1" title="Isolated object point cloud" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption>The isolated object point cloud.</figcaption></figure>
+
+<h3>Final pose estimation (Steps 4 and 5)</h3>
+<p>The estimated pose is drawn as a coordinate frame (red, green and blue axes for X, Y and Z) aligned to the object's principal axes, next to the world-origin frame. The translation is the point cloud centroid, and the rotation comes from the eigenvectors of the point covariance matrix.</p>
+<figure class="video"><div class="frame"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/-Mc86dpm9DU?rel=0&playsinline=1" title="Final pose estimation result" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<figcaption>The final pose estimation result.</figcaption></figure>
+<div class="grid2">
+<figure class="fig"><img src="../images/Screenshot%20from%202026-09-12%2022-32-48.png" width="1920" height="1080" loading="lazy" alt="Open3D window showing the object cloud and its estimated pose axes"><figcaption>The result in Open3D: object cloud with its estimated pose frame.</figcaption></figure>
+<figure class="fig"><img src="../images/Screenshot%20from%202026-09-12%2022-40-33.png" width="1920" height="1080" loading="lazy" alt="The pose.json output file"><figcaption>The saved <code>pose.json</code>: rotation matrix, translation and 4x4 transform.</figcaption></figure>
+</div>
+
+<h2 id="details">4. Technical details</h2>
+<h3>Camera convention</h3>
+<p>Isaac Sim uses a USD / Omniverse coordinate system that needs careful handling:</p>
+<ul class="tight">
+<li>The world frame is right-handed and Y-up.</li>
+<li>The camera-local frame is OpenGL-style: X to the right, Y up, and the camera looks down <strong>&minus;Z</strong>.</li>
+<li><code>cameraViewTransform</code> in the JSON is a <strong>row-major, row-vector view matrix</strong>, meaning <code>p_world_row @ M = p_camera_row</code>. To use it as a standard column-vector transform it must be transposed and inverted.</li>
+<li><code>distance_to_image_plane</code> is <strong>z-depth</strong> (distance along the optical axis), not Euclidean ray length.</li>
+</ul>
+<p>These conventions are documented in <code>utils_isaac_io.py</code> and checked automatically by <code>00_verify_conventions.py</code>.</p>
+
+<h3>Intrinsics: projection matrix, not aperture and focal length</h3>
+<p>Intrinsics are derived from Isaac's <code>cameraProjection</code> matrix instead of the physical <code>cameraAperture</code> and <code>cameraFocalLength</code> values. Isaac's "aperture fit" conform policy can silently rescale the effective field of view on one axis without updating the reported aperture. On the real capture data this produced a <strong>~23% systematic error in <code>fy</code></strong> when derived from the aperture. Using the projection matrix that the renderer itself uses removes the ambiguity.</p>
+
+<h3>Registration: two methods</h3>
+<div class="grid2">
+<div><p><strong>Method 2a: known extrinsics.</strong> Uses Isaac's ground-truth <code>cameraViewTransform</code> to place each view in world space. No feature matching is needed: transform and concatenate. It serves as the reference for judging Method 2b.</p></div>
+<div><p><strong>Method 2b: ICP.</strong> Registers views from geometry alone. Each cloud is voxel-downsampled, given normals and FPFH features, then registered pairwise with coarse RANSAC alignment followed by point-to-plane ICP. A pose graph with odometry edges (consecutive pairs) and loop-closure edges (all other pairs) is then optimised globally with Levenberg-Marquardt.</p></div>
+</div>
+
+<h3>Pose estimation with PCA</h3>
+<ul class="tight">
+<li><strong>Translation:</strong> the centroid of the isolated object cloud.</li>
+<li><strong>Rotation:</strong> the eigenvectors of the point covariance matrix, sorted by descending eigenvalue, so the largest spread becomes the primary axis. If the eigenvectors form a left-handed system, the matrix is corrected to be right-handed (determinant +1).</li>
+</ul>
+<p>The method is geometry-only and makes no assumption about object category or shape: it estimates the principal axes of what was observed.</p>
+
+<h2 id="decisions">5. Key design decisions</h2>
+<ul class="tight">
+<li><strong>Intrinsics from the projection matrix.</strong> Avoids the systematic aperture-fit error described above, confirmed empirically on the captured data.</li>
+<li><strong>Two registration methods side by side.</strong> A ground-truth method (2a) and an algorithmic one (2b) make it easy to compare registration quality and see where ICP introduces error relative to the known-pose baseline.</li>
+<li><strong>Step 0 as a runnable sanity check.</strong> Sign of Y, sign of Z and row-major versus column-major matrices are the most common sources of silent errors in 3D perception. Turning the check into a script makes it repeatable instead of a comment.</li>
+</ul>
+
+<h2 id="run">6. Running the pipeline</h2>
+<p>Requirements: Python 3.8+, <code>open3d</code> and <code>numpy</code>. Isaac Sim is <strong>not</strong> needed, because the capture data is in the repository.</p>
+<div class="cb"><pre># clone only the pose_estimation folder
+git clone --filter=blob:none --sparse https://github.com/Vihaan30g/general-perception.git
+cd general-perception
+git sparse-checkout set pose_estimation
+
+pip install open3d numpy
+
+# every script is run from the scripts folder
+cd pose_estimation/scripts</pre></div>
+<p>Run the steps in order:</p>
+<div class="cb"><pre>python 00_verify_conventions.py                  # Step 0 (optional): sanity check
+python 01_pcd_from_depth.py                      # Step 1: per-view point clouds
+python 02a_registration_known_extrinsics.py      # Step 2a: merge with ground-truth poses
+python 02b_registration_icp.py                   # Step 2b: merge with FPFH + RANSAC + ICP
+python 03_plane_and_object_segmentation.py       # Step 3: isolate the object
+python 04_pose_estimation_pca.py                 # Step 4: write pose.json
+python 05_visualize.py                           # Step 5: interactive view</pre></div>
+<table>
+<tr><th>Step</th><th>What it does</th><th>Output</th></tr>
+<tr><td>0</td><td>Cross-checks the depth math against Isaac's point cloud. A mean nearest-neighbour distance below 2 cm means the conventions are correct.</td><td>Printed check</td></tr>
+<tr><td>1</td><td>Backprojects each depth map into a camera-local cloud.</td><td><code>outputs/per_view_pcd/</code></td></tr>
+<tr><td>2a</td><td>Merges with known camera poses. Runs after Step 1.</td><td><code>merged_scene_extrinsics.pcd</code></td></tr>
+<tr><td>2b</td><td>Merges from geometry alone. Slower: runtime grows quadratically with the number of views.</td><td><code>merged_scene_icp.pcd</code></td></tr>
+<tr><td>3</td><td>RANSAC ground removal, outlier removal and DBSCAN. Works on the result of 2a or 2b.</td><td><code>object.pcd</code></td></tr>
+<tr><td>4</td><td>PCA pose: 3&times;3 rotation, translation and 4&times;4 transform.</td><td><code>pose.json</code></td></tr>
+<tr><td>5</td><td>Open3D window with the object, its pose frame and the world origin.</td><td>Interactive</td></tr>
+</table>
+<p>Step 3 accepts <code>--input</code> to choose which merged cloud to use (ICP by default), plus two tunable parameters:</p>
+<table>
+<tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
+<tr><td><code>--plane-dist-thresh</code></td><td>0.008 m</td><td>RANSAC inlier threshold for the ground plane. Increase it if the plane is not fully removed.</td></tr>
+<tr><td><code>--voxel</code></td><td>0.003 m</td><td>Final voxel downsample resolution of the object cloud.</td></tr>
+</table>
+
+<h2 id="tools">7. Utility scripts and re-capturing data</h2>
+<h3><code>view_pointcloud.py</code>: inspect any cloud at any stage</h3>
+<div class="cb"><pre>python view_pointcloud.py ../outputs/per_view_pcd/frame1.pcd
+python view_pointcloud.py ../outputs/merged_scene_icp.pcd --voxel 0.005
+python view_pointcloud.py ../outputs/object.pcd --uniform-color 0.8 0.2 0.2 --axis 0.1</pre></div>
+<table>
+<tr><th>Flag</th><th>Description</th></tr>
+<tr><td><code>--axis &lt;size&gt;</code></td><td>Draw a world-origin frame of the given size (<code>0</code> hides it).</td></tr>
+<tr><td><code>--voxel &lt;size&gt;</code></td><td>Downsample before viewing, useful for large merged clouds.</td></tr>
+<tr><td><code>--uniform-color R G B</code></td><td>Paint the cloud one flat colour (0 to 1 range).</td></tr>
+</table>
+<h3><code>fly_cam.py</code>: a free-fly camera in Isaac Sim</h3>
+<p>Paste it into Isaac Sim's Script Editor and run once. It creates a standard USD camera at <code>/World/FlyCam</code> that you move with right mouse button and WASD, handy for framing the scene before capture. It only runs inside Isaac Sim.</p>
+<h3>Capturing your own data (optional)</h3>
+<ol class="tight">
+<li>Open <code>scenes/objects_on_ground.usd</code> in Isaac Sim.</li>
+<li>Use <code>fly_cam.py</code> to navigate and frame the scene.</li>
+<li>Configure the Replicator <code>BasicWriter</code> to output <code>rgb</code>, <code>distance_to_image_plane</code>, <code>camera_params</code> and <code>pointcloud</code>.</li>
+<li>Run the Replicator. Frames are written to <code>data/captures/</code>.</li>
+<li>Continue from Step 0.</li>
+</ol>
+
+<h2 id="structure">8. Repository structure</h2>
+<pre class="tree">pose_estimation/
+  data/captures/frame1 ... frame6/   RGB, depth, camera params, ground-truth point cloud
+  scenes/
+    objects_on_ground.usd            Isaac Sim scene used for capture
+  scripts/
+    utils_isaac_io.py                shared IO and camera math (read this first)
+    00_verify_conventions.py         Step 0
+    01_pcd_from_depth.py             Step 1
+    02a_registration_known_extrinsics.py   Step 2a
+    02b_registration_icp.py          Step 2b
+    03_plane_and_object_segmentation.py    Step 3
+    04_pose_estimation_pca.py        Step 4
+    05_visualize.py                  Step 5
+    fly_cam.py                       Isaac Sim free-fly camera
+    view_pointcloud.py               inspect any .pcd file</pre>
+<p>The <code>outputs/</code> folder is not committed (it would hold large <code>.pcd</code> files). It is created when you run the scripts. This project is one of several in the <a href="https://github.com/Vihaan30g/general-perception">general-perception</a> repository, alongside the Grounding DINO and SAM ROS 2 packages and the shared Isaac Sim scenes.</p>
+
+</main>
+<footer>Written by Vihaan Gupta &middot; <a href="https://github.com/Vihaan30g">GitHub</a> &middot; <a href="https://github.com/Vihaan30g/general-perception">general-perception repository</a> &middot; <a href="https://www.youtube.com/@vihaan30g">YouTube</a> &middot; <a href="mailto:vihaan30g@gmail.com">vihaan30g@gmail.com</a></footer>
+<div id="lb"><img alt=""></div>
+<script>
+document.querySelectorAll('.cb').forEach(function(b){
+  var btn=document.createElement('button');btn.textContent='Copy';
+  btn.onclick=function(){
+    var t=b.querySelector('pre').innerText;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1500)}).catch(function(){btn.textContent='Press Ctrl+C'});
+  };
+  b.appendChild(btn);
+});
+var lb=document.getElementById('lb'),lbi=lb.querySelector('img');
+document.querySelectorAll('.fig img').forEach(function(i){
+  i.addEventListener('click',function(){lbi.src=i.src;lbi.alt=i.alt;lb.style.display='flex'});
+});
+lb.addEventListener('click',function(){lb.style.display='none'});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')lb.style.display='none'});
+// YouTube cannot play embedded videos on pages opened straight from disk (file://).
+if (location.protocol === 'file:') {
+  var first = document.querySelector('.video');
+  if (first) {
+    var d = document.createElement('div');
+    d.className = 'local';
+    d.innerHTML = '<strong>Videos will not play inline here.</strong> You opened this page as a local file, and YouTube only plays embedded videos on pages served over http(s). View it on GitHub Pages, or run <code>python3 -m http.server</code> in the repository folder and open <code>http://localhost:8000</code>.';
+    first.parentNode.insertBefore(d, first);
+  }
+}
+</script>
+</body>
+</html>
